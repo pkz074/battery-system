@@ -1,4 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
 venv/
-ai-service/venv/
-venv/
-ai-service/venv/
+.venv/
+*.pkl            
+.env      
+ai-service/venv/     
+
+# Go
+/backend/bin/
+/backend/dist/
+
+# OS
+.DS_Store
+Thumbs.db
