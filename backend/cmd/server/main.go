@@ -1,7 +1,6 @@
 package main
 
 import (
-	"battery-backend/internal/mlclient"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -9,11 +8,12 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/pkz074/battery-system/backend/internal/mlclient"
 )
 
 func main() {
 
-	ai := mlclient.newAIClient("http://localhost:8080")
+	ai := mlclient.NewAIClient("http://127.0.0.1:8000")
 
 	r := chi.NewRouter()
 
@@ -32,13 +32,13 @@ func main() {
 
 	r.Post("/api/predict", func(w http.ResponseWriter, r *http.Request) {
 
-		var req mlclient.predictionRequest
+		var req mlclient.PredictionRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			http.Error(w, "Invalid request", 400)
 			return
 		}
 
-		result, err := ai.getPrediction(req.Voltages)
+		result, err := ai.GetPrediction(req.Voltages)
 		if err != nil {
 			log.Println("AI Error: ", err)
 			http.Error(w, "AI Failed", 500)

@@ -15,13 +15,13 @@ type AIClient struct {
 	baseUrl    string
 }
 
-type predictionRequest struct {
+type PredictionRequest struct {
 	Voltages     []float64 `json:"voltages"`
 	Threshold    float64   `json:"threshold"`
 	IncludePlots bool      `json:"include_plots"`
 }
 
-type predictionResponse struct {
+type PredictionResponse struct {
 	SohRaw         float64           `json:"soh_raw"`
 	Soh            float64           `json:"soh"`
 	Classification string            `json:"classification"`
@@ -29,16 +29,16 @@ type predictionResponse struct {
 	Plots          map[string]string `json:"plots"`
 }
 
-type chatRequest struct {
+type ChatRequest struct {
 	Message string `json:"message"`
 }
 
-type chatResponse struct {
+type ChatResponse struct {
 	Reply string `json:"reply"`
 	Error string `json:"error,omitempty"`
 }
 
-func newAIClient(url string) *AIClient {
+func NewAIClient(url string) *AIClient {
 	if url == "" {
 		url = pythonURL
 	}
@@ -51,30 +51,30 @@ func newAIClient(url string) *AIClient {
 // Methods
 
 func (c *AIClient) Chat(msg string) (string, error) {
-	reqBody := chatRequest{Message: msg}
+	reqBody := ChatRequest{Message: msg}
 	jsonBody, _ := json.Marshal(reqBody)
 
-	resp, err := c.httpClient.Post(c.baseUrl+"/chat", "applications/json", bytes.NewBuffer(jsonBody))
+	resp, err := c.httpClient.Post(c.baseUrl+"/chat", "application/json", bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()
-	var result chatResponse
+	var result ChatResponse
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return "", err
 	}
 	return result.Reply, nil
 }
 
-func (c *AIClient) getPrediction(voltages []float64) (*predictionResponse, error) {
-	reqBody := predictionRequest{
+func (c *AIClient) GetPrediction(voltages []float64) (*PredictionResponse, error) {
+	reqBody := PredictionRequest{
 		Voltages:     voltages,
 		Threshold:    0.6,
 		IncludePlots: true,
 	}
 
 	jsonBody, _ := json.Marshal(reqBody)
-	resp, err := c.httpClient.Post(c.baseUrl+"/predict", "applications/json", bytes.NewBuffer(jsonBody))
+	resp, err := c.httpClient.Post(c.baseUrl+"/predict", "application/json", bytes.NewBuffer(jsonBody))
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to contact AI service: %w", err)
@@ -85,7 +85,7 @@ func (c *AIClient) getPrediction(voltages []float64) (*predictionResponse, error
 		return nil, fmt.Errorf("AI service returned status: %d", resp.StatusCode)
 	}
 
-	var result predictionResponse
+	var result PredictionResponse
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, fmt.Errorf("failed to decode AI response: %w", err)
 	}
